@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.service.NotificationTaskService;
+import pro.sky.telegrambot.service.TelegramBotService;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -32,41 +34,50 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Autowired
     private TelegramBot telegramBot;
+    private final NotificationTaskService notificationTaskService;
+    private final TelegramBotService telegramBotService;
 
-    @PostConstruct
-    public void init() {
-        telegramBot.setUpdatesListener(this);
-    }
+    public TelegramBotUpdatesListener(TelegramBot telegramBot,
+                                      NotificationTaskService notificationTaskService,
+                                      TelegramBotService telegramBotService) {
+        this.telegramBot = telegramBot;
+        this.notificationTaskService = notificationTaskService;
+        this.telegramBotService = telegramBotService;
 
-    @Override
-    public int process(List<Update> updates) {
-        updates.forEach(update -> {
-            LOG.info("Processing update: {}", update);
-            Long id = update.message().chat().id();
-            Message message = update.message();
-            String text = message.text();
-            LocalDateTime dateTime;
-            if (update.message() != null && text != null) {
-                Matcher matcher = PATTERN.matcher(text);
-                if (text.equals("/start")) {
-                    SendMessage sendMessage = new SendMessage(
-                            id,
-                            "Для планирования задачи отправте её в формате:\\n*01.01.2022 20:00 Сделать домашнюю работу*"
-                    );
-                    sendMessage.parseMode(ParseMode.Markdown);/*Оформление*/
-                    SendResponse sendResponse = telegramBot.execute(sendMessage); /*Если много символов будет 400 ,что бы понять*/
-                    if (!sendResponse.isOk()) {
-                        LOG.error("SendMessage was failed due to: " + sendResponse.description());
+        @PostConstruct
+        public void init () {
+            telegramBot.setUpdatesListener(this);
+        }
+
+        @Override
+        public int process (List < Update > updates) {
+            updates.forEach(update -> {
+                LOG.info("Processing update: {}", update);
+                Long chatId = update.message().chat().id();
+                Message message = update.message();
+                String text = message.text();
+                LocalDateTime dateTime;
+                if (update.message() != null && text != null) {
+                    Matcher matcher = PATTERN.matcher(text);
+                    if (text.equals("/start")) {
+                        telegramBotService.sendMessage(chatId,
+                                "Для планирования задачи отправте её в формате:\\n*01.01.2022 20:00 Сделать домашнюю работу*",
+                                ParseMode.Markdown
+                        );
+                    } else if (matcher.matches() && (dateTime = parse(matcher.group(1))) != null) {
+
                     }
-                } else if (matcher.matches() && (dateTime = parse(matcher.group(1))) != null) {
-                    String notification = matcher.group(2);
-
+                    notificationTaskService.save(chatId, matcher.group(2), dateTime);
+                    telegramBotService.sendMessage(chatId, "Ваша задача успешно запланирована!");
                 } else {
-                    /*пишем, что не понимаем юзера*/
+                    telegramBotService.sendMessage(chatId, "Формат сообщения неверный!");
                 }
+            } else{
+                telegramBotService.sendMessage(
+                        chatId,
+                        "Отправте команду /start или сообщение для планирования задачи!"
+                );
             }
-
-            // Process your updates here
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
