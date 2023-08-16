@@ -67,28 +67,29 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                         );
                     } else if (matcher.matches() && (dateTime = parse(matcher.group(1))) != null) {
 
+                        notificationTaskService.save(chatId, matcher.group(2), dateTime);
+                        telegramBotService.sendMessage(chatId, "Ваша задача успешно запланирована!");
+                    } else {
+                        telegramBotService.sendMessage(chatId, "Формат сообщения неверный!");
                     }
-                    notificationTaskService.save(chatId, matcher.group(2), dateTime);
-                    telegramBotService.sendMessage(chatId, "Ваша задача успешно запланирована!");
                 } else {
-                    telegramBotService.sendMessage(chatId, "Формат сообщения неверный!");
+                    telegramBotService.sendMessage(
+                            chatId,
+                            "Отправте команду /start или сообщение для планирования задачи!"
+                    );
                 }
-            } else{
-                telegramBotService.sendMessage(
-                        chatId,
-                        "Отправте команду /start или сообщение для планирования задачи!"
-                );
-            }
-        });
-        return UpdatesListener.CONFIRMED_UPDATES_ALL;
-    }
-
-    @Nullable
-    private LocalDateTime parse(String dateTime) {
-        try {
-            return LocalDateTime.parse(dateTime, DATE_TIME_FORMATTER);
-        } catch (DateTimeParseException e) {
-            return null;
+            });
+            return UpdatesListener.CONFIRMED_UPDATES_ALL;
         }
-    }
-}
+
+                @Nullable
+                private LocalDateTime parse (String dateTime){
+                    try {
+                        return LocalDateTime.parse(dateTime, DATE_TIME_FORMATTER);
+                    } catch (DateTimeParseException e) {
+                        return null;
+                    }
+                }
+            }
+
+
