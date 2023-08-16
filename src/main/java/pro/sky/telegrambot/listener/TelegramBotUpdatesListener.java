@@ -43,6 +43,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         this.telegramBot = telegramBot;
         this.notificationTaskService = notificationTaskService;
         this.telegramBotService = telegramBotService;
+    }
 
         @PostConstruct
         public void init () {
@@ -50,7 +51,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         }
 
         @Override
-        public int process (List < Update > updates) {
+        public int process (List<Update> updates) {
             updates.forEach(update -> {
                 LOG.info("Processing update: {}", update);
                 Long chatId = update.message().chat().id();
