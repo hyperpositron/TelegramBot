@@ -26,9 +26,6 @@ public class Scheduler {
 
     @Scheduled(cron = "0 0/1 * * * *")
     public void runTask() {
-//        return repository.findAll().stream()
-//                .filter(t -> t.getTime().equals(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)))
-//                .collect(Collectors.toList());
         logger.info("scheduling method is called");
         List<NotificationTask> result = repository.findTaskByTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
         logger.info("list of tasks retrieved: {}", result);

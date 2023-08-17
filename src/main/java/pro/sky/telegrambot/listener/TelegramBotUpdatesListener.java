@@ -43,37 +43,43 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public int process(List<Update> updates) {
         updates.forEach(update -> {
             logger.info("Processing update: {}", update);
-            if (update.message().text().equalsIgnoreCase("/start")) {
-                SendMessage message = new SendMessage(update.message().chat().id(),
-                        "Hello, " + update.message().from().firstName() + "!");
-                SendResponse response = telegramBot.execute(message);
-            } else {
-                String task = update.message().text();
-                logger.info(task);
-                Pattern pattern = Pattern.compile("([0-9.:\\s]{16})(\\s)([\\W+]+)");
-                Matcher matcher = pattern.matcher(task);
-                if (matcher.matches()) {
-                    System.out.println(matcher.group(1));
-                    System.out.println(matcher.group(3));
+            try {
 
-                    LocalDateTime date;
-                    try {
-                        date = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
-                        String theTask = matcher.group(3);
-                        System.out.println(date);
-                        System.out.println(theTask);
 
-                        NotificationTask t = new NotificationTask();
-                        t.setChatId(update.message().chat().id());
-                        t.setTime(date);
-                        t.setMessage(theTask);
-                        repository.save(t);
-                    } catch (DateTimeParseException e) {
-                        SendMessage message = new SendMessage(update.message().chat().id(),
-                                "Wrong format for date or time!");
-                        SendResponse response = telegramBot.execute(message);
+                if (update.message().text().equalsIgnoreCase("/start")) {
+                    SendMessage message = new SendMessage(update.message().chat().id(),
+                            "Hello, " + update.message().from().firstName() + "!");
+                    SendResponse response = telegramBot.execute(message);
+                } else {
+                    String task = update.message().text();
+                    logger.info(task);
+                    Pattern pattern = Pattern.compile("([0-9.:\\s]{16})(\\s)([\\W\\w+]+)");
+                    Matcher matcher = pattern.matcher(task);
+                    if (matcher.matches()) {
+                        System.out.println(matcher.group(1));
+                        System.out.println(matcher.group(3));
+
+                        LocalDateTime date;
+                        try {
+                            date = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+                            String theTask = matcher.group(3);
+                            System.out.println(date);
+                            System.out.println(theTask);
+
+                            NotificationTask t = new NotificationTask();
+                            t.setChatId(update.message().chat().id());
+                            t.setTime(date);
+                            t.setMessage(theTask);
+                            repository.save(t);
+                        } catch (DateTimeParseException e) {
+                            SendMessage message = new SendMessage(update.message().chat().id(),
+                                    "Wrong format for date or time!");
+                            SendResponse response = telegramBot.execute(message);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
