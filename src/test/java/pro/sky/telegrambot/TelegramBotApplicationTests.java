@@ -1,69 +1,50 @@
 package pro.sky.telegrambot;
 
-import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.model.request.ParseMode;
-import com.pengrad.telegrambot.request.SendMessage;
-import net.bytebuddy.asm.Advice;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.config.Task;
+import pro.sky.telegrambot.entity.NotificationTask;
 import pro.sky.telegrambot.listener.TelegramBotUpdatesListener;
-import pro.sky.telegrambot.service.NotificationTaskService;
+import pro.sky.telegrambot.repository.TaskRepository;
+import pro.sky.telegrambot.scheduler.Scheduler;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.List;
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.shortThat;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class TelegramBotApplicationTests {
-    @Mock
-    private TelegramBot telegramBot;
-    @Mock
-    private NotificationTaskService notificationTaskService;
-    @InjectMocks
-    private TelegramBotUpdatesListener telegramBotUpdatesListener;
 
-    @Test
-    public void handStartTest() throws URISyntaxException, IOException {
-        String json = Files.readString(
-                Paths.get(TelegramBotUpdatesListenerTest.class.getResource("text_update.json").toURI()));
-        Update update = getUpdate(json, "/start");
-        telegramBotUpdatesListener.process(Collections.singletonList(update));
+//	@MockBean
+//	TaskRepository repository;
+//
+//	@SpyBean
+//	Scheduler scheduler;
+//
+//	@InjectMocks
+//	TelegramBotUpdatesListener listener;
 
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        Mockito.verify(telegramBot).execute(argumentCaptor.capture());
-        SendMessage actual = argumentCaptor.getValue();
+	@Test
+	void contextLoads() {
+	}
 
-        Assertions.assertThat(actual.getParameters().get("chat_id")).isEqualTo(123L);
-        Assertions.assertThat(actual.getParameters().get("text")).isEqualTo(
-                "Для планирования задачи отправте её в формате:\n*01.01.2022 20:00 Сделать домашнюю работу*");
-        Assertions.assertThat(actual.getParameters().get("parse_mode"))
-                .isEqualTo(ParseMode.Markdown.name());
-
-    }
-
-    @Test
-    public void handleInvalidMessage() throws URISyntaxException, IOException {
-        String json = Files.readString(
-                Paths.get(TelegramBotUpdatesListenerTest.class.getResource("text_update.json").toURI()));
-        Update update = getUpdate(json, "hello world");
-        telegramBotUpdatesListener.process(Collections.singletonList(update));
-
-        ArgumentCaptor<SendMessage> argumentCaptor = ArgumentCaptor.forClass(SendMessage.class);
-        Mockito.verify(telegramBot).execute(argumentCaptor.capture());
-        SendMessage actual = argumentCaptor.getValue();
-
-        Assertions.assertThat(actual.getParameters().get("chat_id")).isEqualTo(123L);
-        Assertions.assertThat(actual.getParameters().get("text")).isEqualTo(
-                "Некорректный формат задачи для планирования! Корректный формат: 01.01.2022 20:00 Сделать домашнюю работу");
-
-    }
+//	Не совсем понятно, что тестировать, учитывая, что вся работа выполнятеся внешними сервисами
+//	@Test
+//	void testCheckTasks() {
+//		LocalDateTime time = LocalDateTime.now();
+//		when(repository.findAll()).thenReturn(List.of(
+//				new NotificationTask(1L, 1L, "Do your work", LocalDateTime.now())
+//		));
+//		assertEquals();
+//	}
 
 }

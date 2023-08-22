@@ -1,25 +1,28 @@
 package pro.sky.telegrambot.entity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notification_tasks")
 public class NotificationTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(length = 4096, nullable = false)
-    private String text;
-    @Column(name = "chat_id")
-    private long chatId;
-    @Column(name = "date_time", nullable = false)
-    private LocalDateTime dateTime;
+    private Long chatId;
+    private String message;
+    private LocalDateTime time;
 
-    public NotificationTask(String text, long chatId, LocalDateTime dateTime) {
-        this.text = text;
+    public NotificationTask() {
+    }
+
+    public NotificationTask(Long id, Long chatId, String message, LocalDateTime time) {
+        this.id = id;
         this.chatId = chatId;
-        this.dateTime = dateTime;
+        this.message = message;
+        this.time = time;
     }
 
     public Long getId() {
@@ -30,27 +33,27 @@ public class NotificationTask {
         this.id = id;
     }
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public long getChatId() {
+    public Long getChatId() {
         return chatId;
     }
 
-    public void setChatId(long chatId) {
+    public void setChatId(Long chatId) {
         this.chatId = chatId;
     }
 
-    public LocalDateTime getDateTime() {
-        return dateTime;
+    public String getMessage() {
+        return message;
     }
 
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public LocalDateTime getTime() {
+        return time;
+    }
+
+    public void setTime(LocalDateTime time) {
+        this.time = time;
     }
 }
